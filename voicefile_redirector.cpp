@@ -570,6 +570,9 @@ extern "C" {
 		else
 		{
 			// no version checks needed for editor
+			_MESSAGE("voicefile_redirector: not compatible with editor, exiting.");
+			return false;
+
 		}
 
 		// version checks pass
