@@ -1,4 +1,4 @@
-# VoiceFile-Redirector OBSE Plugin v1.0
+# VoiceFile-Redirector OBSE Plugin v1.1
 
 Description:
 OBSE plugin to redirect missing voicefiles to other locations.  Based on Elys_USV.
