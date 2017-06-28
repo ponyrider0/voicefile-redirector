@@ -387,9 +387,11 @@ static void CheckLipFile(void)
 			_MESSAGE("voicefile_redirector: ERROR, filename '%s' is too long. Aborting replacement operation.", TmpLip);
 			return;
 		}
+		// BugFix for lip files: for some reason, doing strcpy is not working, so reverting back to old method of
+		// redirecting to DLL's internal global variable for lipfilename.
 		_MESSAGE("voicefile_redirector: Lips Hook: replacing '%s' with '%s'", pLipFile, TmpLip);
-//		pLipFile = &TmpLip[0];
-		strcpy(pLipFile, TmpLip);
+		pLipFile = &TmpLip[0];
+//		strcpy(pLipFile, TmpLip);
 	}
 	else
 	{
