@@ -167,7 +167,48 @@ void ReplaceGreeting(char *voicefilename)
 		strcpy(voicefilename, "Data\\Sound\\Voice\\Oblivion.esm\\redguard\\m\\GenericRedguard_HELLO_00062CC1_1.mp3");
 		return;
 	}
-	// if nothing found, just use imperial\m or \f
+
+	//////////////////////
+	// EXPERIMENTAL: Catch racial voice sets from Diverse Voices mod
+	resultstr = strstr_caseinsensitive(voicefilename, "wood elf\\f");
+	if (resultstr != nullptr)
+	{
+		strcpy(voicefilename, "Data\\Sound\\Voice\\Oblivion.esm\\high elf\\f\\GenericHighElf_HELLO_00062CAA_1.mp3");
+		return;
+	}
+	resultstr = strstr_caseinsensitive(voicefilename, "wood elf\\m");
+	if (resultstr != nullptr)
+	{
+		strcpy(voicefilename, "Data\\Sound\\Voice\\Oblivion.esm\\high elf\\m\\GenericHighElf_HELLO_00062CAA_1.mp3");
+		return;
+	}
+	resultstr = strstr_caseinsensitive(voicefilename, "dark elf\\f");
+	if (resultstr != nullptr)
+	{
+		strcpy(voicefilename, "Data\\Sound\\Voice\\Oblivion.esm\\high elf\\f\\GenericHighElf_HELLO_00062CAA_1.mp3");
+		return;
+	}
+	resultstr = strstr_caseinsensitive(voicefilename, "dark elf\\m");
+	if (resultstr != nullptr)
+	{
+		strcpy(voicefilename, "Data\\Sound\\Voice\\Oblivion.esm\\high elf\\m\\GenericHighElf_HELLO_00062CAA_1.mp3");
+		return;
+	}
+	resultstr = strstr_caseinsensitive(voicefilename, "orc\\f");
+	if (resultstr != nullptr)
+	{
+		strcpy(voicefilename, "Data\\Sound\\Voice\\Oblivion.esm\\nord\\f\\GenericNord_HELLO_00062CB3_1.mp3");
+		return;
+	}
+	resultstr = strstr_caseinsensitive(voicefilename, "orc\\m");
+	if (resultstr != nullptr)
+	{
+		strcpy(voicefilename, "Data\\Sound\\Voice\\Oblivion.esm\\nord\\m\\GenericNord_HELLO_00062CB3_1.mp3");
+		return;
+	}
+	//////////////////////
+
+	// if no matches found, then just use imperial\m or \f
 	resultstr = strstr_caseinsensitive(voicefilename, "\\f\\");
 	if (resultstr != nullptr)
 	{
@@ -179,6 +220,55 @@ void ReplaceGreeting(char *voicefilename)
 	return;
 
 }
+
+
+//////////////////////
+// EXPERIMENTAL:
+// In the voicefilename string: replace origstring with swapstring
+// Then check if modified filename exists
+bool Fallback_SwapRace(char *voicefilename, const char *origstring, const char *swapstring)
+{
+	char tempstring[MAX_VOICENAME];
+	const char *resultstr;
+	char *startoffset;
+	char *stopoffset;
+	int swapstr_len;
+	int origstr_len;
+
+	// search for origstring and replace with swapstring
+	// NOTE: origstrings must start and end with "\\"
+	resultstr = strstr_caseinsensitive(voicefilename, origstring);
+	if (resultstr != nullptr)
+	{
+		origstr_len = strlen(origstring);
+		// save start and stop offsets
+		startoffset = (char*)(resultstr + 1);
+		stopoffset = (char*)(startoffset + origstr_len - 2);
+	}
+	else
+	{
+//		_MESSAGE("voicefile_redirector: Race Fallback (DEBUG): origstring=[%s] not found in '%s'.", origstring, &voicefilename[5]);
+		return false;
+	}
+
+	// shift stopoffset to accommadate racestring
+	swapstr_len = strlen(swapstring);
+	// place the bottom half of the pathname into a new string so that there is no memory corruption when shifting
+	strcpy(tempstring, stopoffset);
+	strcpy(startoffset + swapstr_len, tempstring);
+	strncpy(startoffset, swapstring, swapstr_len);
+
+	_MESSAGE("voicefile_redirector: Race Fallback: looking for fallback file: '%s'", &voicefilename[5]);
+	if ((*g_FileFinder)->FindFile(&voicefilename[5], 0, 0, -1) == 0)
+	{
+		return false;
+	}
+
+	return true;
+
+}
+//////////////////////
+
 
 // try to fallback to imperial voice set if available
 // return true if imperial voice set available
@@ -258,6 +348,30 @@ bool FallbackToRace(char *voicefilename, const char *racestring)
 	return true;
 
 }
+
+//////////////////////
+// EXPERIMENTAL: check for specific race then try to fallback to alternative race
+// TODO: replace hardcoded strings with actual table
+bool FallbackToRaceTable(char *voicefilename)
+{
+	const char *resultstr;
+
+	if (Fallback_SwapRace(voicefilename, "\\dark elf\\", "high elf") == false)
+	{
+		if (Fallback_SwapRace(voicefilename, "\\wood elf\\", "high elf") == false)
+		{
+			if (Fallback_SwapRace(voicefilename, "\\orc\\", "nord") == false)
+			{
+				return FallbackToRace(voicefilename, "imperial");
+			}
+		}
+	}
+
+	return true;
+
+}
+//////////////////////
+
 
 static __declspec(naked) void SilentVoiceHook(void)
 {
@@ -364,7 +478,9 @@ static void CheckLipFile(void)
 		// check if it can fallback to imperial race
 		strcpy(TmpLip, pLipFile);
 	//	_MESSAGE("voicefile_redirector: testing '%s' with race fallback", TmpLip);
-		if (FallbackToRace(TmpLip, "imperial") == true)
+		//////////////////////
+		// EXPERIMENTAL: 
+		if (FallbackToRaceTable(TmpLip) == true)
 		{
 			TmpLip[strlen(TmpLip) - 4] = '\0';
 		}
@@ -428,7 +544,9 @@ static void OverWriteSoundFile(void)
 
 	// check if fallback to imperial race is available
 	strcpy(NewSoundFile, pSoundFile);
-	if (FallbackToRace(NewSoundFile, "imperial") == true)
+	//////////////////////
+	// EXPERIMENTAL: 
+	if (FallbackToRaceTable(NewSoundFile) == true)
 	{
 		// nothing to do, ready for transfer
 	}
@@ -523,7 +641,7 @@ extern "C" {
 
 	bool OBSEPlugin_Query(const OBSEInterface * obse, PluginInfo * info)
 	{
-		_MESSAGE("voicefile_redirector: OBSE calling plugin's Query function.");
+		_MESSAGE("voicefile_redirector: OBSE calling plugin's Query function. <Voicefile_Redirector v1.3 alpha>");
 
 		// fill out the info structure
 		info->infoVersion = PluginInfo::kInfoVersion;
