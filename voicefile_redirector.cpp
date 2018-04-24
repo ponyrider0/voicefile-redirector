@@ -93,7 +93,7 @@ bool IsGreeting(const char *voicefilename)
 {
 	const char *resultstr;
 
-	resultstr = strstr_caseinsensitive(voicefilename, "greeting");
+	resultstr = strstr_caseinsensitive(voicefilename, "_greeting_");
 	if (resultstr != nullptr)
 	{
 		resultstr = strstr_caseinsensitive(voicefilename, "_1.mp3");
