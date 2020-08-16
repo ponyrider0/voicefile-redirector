@@ -122,7 +122,7 @@ void ReplaceGreeting(char *voicefilename)
 	resultstr = strstr_caseinsensitive(voicefilename, "argonian\\m");
 	if (resultstr != nullptr)
 	{
-		strcpy(voicefilename, "Data\\Sound\\Oblivion.esm\\argonian\\m\\GenericKhajiit_HELLO_00062CCB_1.mp3");
+		strcpy(voicefilename, "Data\\Sound\\Voice\\Oblivion.esm\\argonian\\m\\GenericKhajiit_HELLO_00062CCB_1.mp3");
 		return;
 	}
 	resultstr = strstr_caseinsensitive(voicefilename, "breton\\m");
